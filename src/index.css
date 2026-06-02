@@ -1,0 +1,53 @@
+@import "tailwindcss";
+
+@layer base {
+  body {
+    @apply bg-gray-950 text-gray-100 min-h-screen font-mono;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+}
+
+@layer components {
+  .bit-cell {
+    @apply w-7 h-7 flex items-center justify-center text-xs font-bold rounded border select-none transition-colors duration-150;
+  }
+
+  .bit-network {
+    @apply bg-indigo-600 border-indigo-400 text-white;
+  }
+
+  .bit-host {
+    @apply bg-gray-700 border-gray-500 text-gray-300;
+  }
+
+  .section-card {
+    @apply bg-gray-900 border border-gray-700 rounded-xl p-5;
+  }
+
+  .section-title {
+    @apply text-indigo-400 font-bold text-sm uppercase tracking-widest mb-4 flex items-center gap-2;
+  }
+
+  .input-base {
+    @apply bg-gray-800 border border-gray-600 rounded-lg px-3 py-2 text-gray-100 text-sm focus:outline-none focus:border-indigo-500 transition-colors;
+  }
+
+  .input-error {
+    @apply border-red-500 focus:border-red-400;
+  }
+
+  .btn-primary {
+    @apply bg-indigo-600 hover:bg-indigo-500 text-white font-semibold px-4 py-2 rounded-lg text-sm transition-colors cursor-pointer;
+  }
+
+  .btn-danger {
+    @apply bg-red-700 hover:bg-red-600 text-white font-semibold px-3 py-1.5 rounded-lg text-xs transition-colors cursor-pointer;
+  }
+
+  .btn-ghost {
+    @apply bg-gray-700 hover:bg-gray-600 text-gray-300 font-semibold px-3 py-1.5 rounded-lg text-xs transition-colors cursor-pointer;
+  }
+}
