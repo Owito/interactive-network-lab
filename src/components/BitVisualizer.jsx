@@ -1,8 +1,6 @@
 import { useMemo } from 'react'
 import { toBinary32, getMaskBinary, isValidIP } from '../utils/subnetCalculator'
 
-const OCTET_LABELS = ['Octeto 1', 'Octeto 2', 'Octeto 3', 'Octeto 4']
-
 export default function BitVisualizer({ ip, cidr, onIPChange, onCIDRChange }) {
   const valid = isValidIP(ip)
 
@@ -13,139 +11,140 @@ export default function BitVisualizer({ ip, cidr, onIPChange, onCIDRChange }) {
 
   const maskBits = useMemo(() => getMaskBinary(cidr), [cidr])
 
-  const octets = useMemo(() => {
-    return [0, 1, 2, 3].map((o) => ({
-      label: OCTET_LABELS[o],
-      bits: ipBits.slice(o * 8, o * 8 + 8),
-      maskBits: maskBits.slice(o * 8, o * 8 + 8),
-    }))
-  }, [ipBits, maskBits])
+  // Octetos para desktop
+  const octets = useMemo(() => [0, 1, 2, 3].map((o) => ({
+    label: `Oct ${o + 1}`,
+    ipBits: ipBits.slice(o * 8, o * 8 + 8),
+    maskBits: maskBits.slice(o * 8, o * 8 + 8),
+    startIdx: o * 8,
+  })), [ipBits, maskBits])
 
   return (
-    <div className="section-card flex flex-col gap-5">
-      <div className="section-title">
-        <span className="text-indigo-400">⬛</span>
-        Visualizador de Bits — IPv4 /{cidr}
-      </div>
+    <div className="section-card" style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+      <div className="section-title">⬛ Bit-Wise Visualizer — IPv4 /{cidr}</div>
 
-      {/* Inputs */}
-      <div className="flex flex-wrap gap-4 items-end">
-        <div className="flex flex-col gap-1">
-          <label className="text-xs text-gray-400">Dirección IP</label>
+      {/* ── Inputs ── */}
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', alignItems: 'flex-end' }}>
+        {/* IP input */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem', flex: '1 1 160px', maxWidth: '200px' }}>
+          <label style={{ fontSize: '0.65rem', color: 'var(--text-muted)', fontFamily: 'Orbitron, sans-serif', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+            Dirección IP
+          </label>
           <input
             type="text"
             value={ip}
             onChange={(e) => onIPChange(e.target.value)}
             placeholder="192.168.1.1"
-            className={`input-base w-44 ${!valid && ip !== '' ? 'input-error' : ''}`}
+            className={`input-base ${!valid && ip !== '' ? 'input-error' : ''}`}
           />
           {!valid && ip !== '' && (
-            <span className="text-red-400 text-xs">IP inválida</span>
+            <span style={{ color: 'var(--neon-magenta)', fontSize: '0.65rem', fontFamily: 'Share Tech Mono, monospace' }}>
+              &gt; IP_INVÁLIDA
+            </span>
           )}
         </div>
 
-        <div className="flex flex-col gap-1 flex-1 min-w-48">
-          <label className="text-xs text-gray-400">
-            Prefijo CIDR: <span className="text-indigo-400 font-bold">/{cidr}</span>
+        {/* CIDR slider + number */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem', flex: '1 1 200px' }}>
+          <label style={{ fontSize: '0.65rem', color: 'var(--text-muted)', fontFamily: 'Orbitron, sans-serif', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+            Prefijo CIDR:{' '}
+            <span style={{ color: 'var(--neon-cyan)', textShadow: '0 0 6px rgba(0,240,255,0.5)' }}>/{cidr}</span>
           </label>
-          <div className="flex items-center gap-3">
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
             <input
-              type="range"
-              min={1}
-              max={30}
-              value={cidr}
+              type="range" min={1} max={30} value={cidr}
               onChange={(e) => onCIDRChange(Number(e.target.value))}
-              className="flex-1 accent-indigo-500 cursor-pointer"
+              style={{ flex: 1, accentColor: 'var(--neon-cyan)', cursor: 'pointer' }}
             />
             <input
-              type="number"
-              min={1}
-              max={30}
-              value={cidr}
-              onChange={(e) => {
-                const v = Number(e.target.value)
-                if (v >= 1 && v <= 30) onCIDRChange(v)
-              }}
-              className="input-base w-16 text-center"
+              type="number" min={1} max={30} value={cidr}
+              onChange={(e) => { const v = Number(e.target.value); if (v >= 1 && v <= 30) onCIDRChange(v) }}
+              className="input-base"
+              style={{ width: '4rem', textAlign: 'center' }}
             />
           </div>
         </div>
       </div>
 
-      {/* Bit grid */}
-      <div className="flex flex-col gap-3">
-        {/* Leyenda */}
-        <div className="flex gap-4 text-xs">
-          <span className="flex items-center gap-1.5">
-            <span className="w-3 h-3 rounded bg-indigo-600 inline-block" />
-            Bits de Red ({cidr})
-          </span>
-          <span className="flex items-center gap-1.5">
-            <span className="w-3 h-3 rounded bg-gray-700 inline-block" />
-            Bits de Host ({32 - cidr})
-          </span>
-        </div>
+      {/* ── Leyenda ── */}
+      <div style={{ display: 'flex', gap: '1.25rem', flexWrap: 'wrap' }}>
+        <span style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.7rem', color: 'var(--text-muted)', fontFamily: 'Share Tech Mono, monospace' }}>
+          <span style={{ width: '10px', height: '10px', background: 'rgba(0,240,255,0.12)', border: '1px solid rgba(0,240,255,0.6)', display: 'inline-block' }} />
+          Red ({cidr} bits)
+        </span>
+        <span style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.7rem', color: 'var(--text-muted)', fontFamily: 'Share Tech Mono, monospace' }}>
+          <span style={{ width: '10px', height: '10px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)', display: 'inline-block' }} />
+          Host ({32 - cidr} bits)
+        </span>
+        <span style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.7rem', color: 'var(--text-muted)', fontFamily: 'Share Tech Mono, monospace' }}>
+          <span style={{ width: '10px', height: '10px', border: '1px solid var(--neon-magenta)', boxShadow: '0 0 6px rgba(255,0,85,0.6)', display: 'inline-block' }} />
+          Frontera Red/Host
+        </span>
+      </div>
 
-        {/* Octetos */}
-        <div className="flex flex-wrap gap-4">
-          {octets.map((oct, oIdx) => (
-            <div key={oIdx} className="flex flex-col gap-1">
-              <span className="text-xs text-gray-500 text-center">{oct.label}</span>
-              <div className="flex gap-0.5 relative">
-                {oct.bits.map((bit, bIdx) => {
-                  const globalIdx = oIdx * 8 + bIdx
-                  const isNetwork = globalIdx < cidr
-                  // Marca la frontera red/host
-                  const isBoundary = globalIdx === cidr - 1 && cidr % 8 !== 0
-                  return (
-                    <div
-                      key={bIdx}
-                      className={`bit-cell ${isNetwork ? 'bit-network' : 'bit-host'} ${
-                        isBoundary ? 'ring-2 ring-red-400' : ''
-                      }`}
-                      title={`Bit ${globalIdx + 1} — ${isNetwork ? 'Red' : 'Host'}`}
-                    >
-                      {bit}
-                    </div>
-                  )
-                })}
-              </div>
-              {/* Máscara debajo */}
-              <div className="flex gap-0.5">
-                {oct.maskBits.map((bit, bIdx) => (
+      {/* ── Grid de bits ──
+          Desktop: 4 octetos en fila
+          Tablet (sm): 2x2
+          Mobile (xs): 1 octeto por fila
+      ── */}
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(190px, 1fr))',
+        gap: '1rem',
+      }}>
+        {octets.map((oct, oIdx) => (
+          <div key={oIdx} style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+            <span style={{ fontSize: '0.6rem', color: 'var(--text-muted)', fontFamily: 'Orbitron, sans-serif', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: '2px' }}>
+              {oct.label}
+            </span>
+            {/* IP bits */}
+            <div style={{ display: 'flex', gap: '2px' }}>
+              {oct.ipBits.map((bit, bIdx) => {
+                const globalIdx = oct.startIdx + bIdx
+                const isNetwork = globalIdx < cidr
+                const isBoundary = globalIdx === cidr - 1
+
+                return (
                   <div
                     key={bIdx}
-                    className="w-7 text-center text-xs text-gray-500"
+                    className={`bit-cell ${isNetwork ? 'bit-network' : 'bit-host'} ${isBoundary ? 'bit-boundary' : ''}`}
+                    title={`Bit ${globalIdx + 1} — ${isNetwork ? 'Red' : 'Host'}`}
                   >
                     {bit}
                   </div>
-                ))}
-              </div>
+                )
+              })}
             </div>
-          ))}
-        </div>
-
-        {/* Etiquetas de posición */}
-        <div className="text-xs text-gray-600 mt-1">
-          Fila superior: bits de la IP — Fila inferior: bits de la máscara
-        </div>
+            {/* Máscara bits */}
+            <div style={{ display: 'flex', gap: '2px' }}>
+              {oct.maskBits.map((bit, bIdx) => (
+                <div key={bIdx} style={{ width: '1.6rem', textAlign: 'center', fontSize: '0.6rem', color: bit === 1 ? 'rgba(0,240,255,0.4)' : 'rgba(255,255,255,0.1)', fontFamily: 'Share Tech Mono, monospace' }}>
+                  {bit}
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
       </div>
 
-      {/* Barra proporcional red/host */}
-      <div className="flex flex-col gap-1">
-        <div className="flex text-xs justify-between text-gray-400">
-          <span>Red ({cidr} bits)</span>
-          <span>Host ({32 - cidr} bits)</span>
+      <div style={{ fontSize: '0.6rem', color: 'rgba(255,255,255,0.15)', fontFamily: 'Share Tech Mono, monospace' }}>
+        // FILA SUPERIOR: bits IP — FILA INFERIOR: bits máscara
+      </div>
+
+      {/* ── Barra proporcional ── */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.65rem', color: 'var(--text-muted)', fontFamily: 'Orbitron, sans-serif', letterSpacing: '0.06em' }}>
+          <span>RED // {cidr} bits</span>
+          <span>HOST // {32 - cidr} bits</span>
         </div>
-        <div className="w-full h-3 bg-gray-700 rounded-full overflow-hidden flex">
-          <div
-            className="h-full bg-indigo-600 transition-all duration-200"
-            style={{ width: `${(cidr / 32) * 100}%` }}
-          />
-          <div
-            className="h-full bg-gray-500"
-            style={{ width: `${((32 - cidr) / 32) * 100}%` }}
-          />
+        <div style={{ width: '100%', height: '6px', background: 'rgba(255,255,255,0.05)', overflow: 'hidden', position: 'relative' }}>
+          <div style={{
+            position: 'absolute', top: 0, left: 0, height: '100%',
+            width: `${(cidr / 32) * 100}%`,
+            background: 'linear-gradient(90deg, var(--neon-cyan), var(--neon-magenta))',
+            boxShadow: '0 0 8px rgba(0,240,255,0.5)',
+            transition: 'width 0.2s ease',
+          }} />
         </div>
       </div>
     </div>
